@@ -7,7 +7,8 @@
   "author": "fal",
   "license": "MIT",
   "scripts": {
-    "start": "yarn start",
+    "start": "node .",
+    "build": "tsc",
     "dev": "nodemon .",
     "dev-ts": "nodemon src/app.ts"
   },
