@@ -22,6 +22,6 @@ exports.usersController = usersController;
 usersController.get('/@me', passport_1.default.authenticate('jwt', { session: false }), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     const user = yield (0, helper_1.verifyJWTUser)((_a = req.headers.authorization) === null || _a === void 0 ? void 0 : _a.split(/\s/)[1]);
-    return res.status(http_status_1.default.OK).send(`Halo, ${user === null || user === void 0 ? void 0 : user.name}`);
+    return res.status(http_status_1.default.OK).json(user);
 }));
 //# sourceMappingURL=user.js.map

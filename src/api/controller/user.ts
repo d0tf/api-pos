@@ -12,7 +12,7 @@ usersController.get(
         const user = await verifyJWTUser(
             req.headers.authorization?.split(/\s/)[1]!
         );
-        return res.status(httpStatus.OK).send(`Halo, ${user?.name}`);
+        return res.status(httpStatus.OK).json(user);
     }
 );
 
