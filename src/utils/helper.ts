@@ -20,11 +20,11 @@ export const validatePassword = (password: string, hash: string): boolean => {
     return isValid;
 };
 
-interface IssuJWT {
+export interface IssueJWT {
     token: string;
 }
 
-export const issueJWT = (user: User): IssuJWT => {
+export const issueJWT = (user: User): IssueJWT => {
     const payload: JwtPayload = {
         sub: user.uuid,
         role: user.roles,
