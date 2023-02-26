@@ -41,13 +41,21 @@ export const issueJWT = (user: User): IssueJWT => {
     };
 };
 
-export const verifyJWTUser = async (token: string) => {
+export const verifyJWTUser = (token: string): Promise<User> => {
     const verifiedToken: string | JwtPayload = verify(
         token,
         process.env.JWT_KEY!,
         { algorithms: ['HS384'] }
     );
-    const user = await User.findOne({ uuid: verifiedToken.sub });
 
-    return user;
+    return new Promise((resolve) => {
+        User.findOne({ uuid: verifiedToken.sub })
+            .then((user) => {
+                if (!user) return;
+                return resolve(user);
+            })
+            .catch((err) => {
+                throw err;
+            });
+    });
 };

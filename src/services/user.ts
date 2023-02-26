@@ -10,7 +10,7 @@ interface UserParameter {
     roles?: 'admin' | 'cashier';
 }
 
-const createUser = ({
+export const createUser = ({
     name,
     username,
     password,
@@ -47,7 +47,7 @@ const createUser = ({
     });
 };
 
-const getUser = (uuid?: {
+export const getUser = (uuid?: {
     uuid: string;
 }): Promise<{
     status: number;
@@ -69,18 +69,58 @@ const getUser = (uuid?: {
     });
 };
 
-const deleteUser = ({
+export const deleteUser = ({
     uuid,
 }: {
     uuid: string;
-}): Promise<{ status: number; result: User[] }> => {
+}): Promise<{ status: number; result?: { msg: string } }> => {
     return new Promise((resolve) => {
         User.findOneAndDelete({ uuid })
             .then((res) => {
-                console.log(res);
+                if (!res)
+                    return resolve({
+                        status: httpStatus.BAD_REQUEST,
+                        result: { msg: "Couldn't find user" },
+                    });
+
+                return resolve({ status: httpStatus.NO_CONTENT });
             })
-            .catch((err) => console.log(err));
+            .catch((err) => {
+                throw err;
+            });
     });
 };
 
-export { createUser, getUser, deleteUser };
+export const updateUser = ({
+    uuid,
+    name,
+    username,
+    password,
+    roles,
+}: {
+    uuid: string;
+    name?: string;
+    username?: string;
+    password?: string;
+    roles?: 'admin' | 'cashier';
+}): Promise<{ status: number; result: User | { msg: string } }> => {
+    return new Promise((resolve) => {
+        User.findOneAndUpdate(
+            { uuid },
+            {
+                name,
+                username,
+                password: password && genPassword(password),
+                roles,
+            },
+            { new: true }
+        )
+            .then((user) => {
+                if (!user) return;
+                return resolve({ status: httpStatus.OK, result: user });
+            })
+            .catch((err) => {
+                throw err;
+            });
+    });
+};
