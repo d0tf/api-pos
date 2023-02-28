@@ -2,16 +2,17 @@ import Router from 'express';
 import httpStatus from 'http-status';
 import passport from 'passport';
 import { verifyJWTUser } from '../../utils/helper';
-import verifyAdmin from '../../middleware/verifyAdmin';
+import authMiddleware from '../../middleware/authMiddleware';
 import { deleteUser, getUser, updateUser } from '../../services/user';
 import updateProfile from '../../schema/updateProfile';
+import _ from 'lodash';
 
 const usersController = Router();
 
 usersController.get(
     '/',
     passport.authenticate('jwt', { session: false }),
-    verifyAdmin,
+    authMiddleware.isAdmin,
     async (req, res) => {
         const users = await getUser();
         return res.status(users.status).json(users.result);
@@ -29,7 +30,6 @@ usersController.get(
     }
 );
 
-// TODO return bad request when request body contains update for roles
 usersController.put(
     '/@me',
     passport.authenticate('jwt', { session: false }),
@@ -41,6 +41,11 @@ usersController.put(
         updateProfile
             .parseAsync(req.body)
             .then(async (value) => {
+                if (_.isEmpty(value) || _.has(req.body, 'roles'))
+                    return res.status(httpStatus.BAD_REQUEST).json({
+                        msg: 'The server cannot process the request because the client sent an invalid request.',
+                    });
+
                 const { name, username, password } = value;
                 const updated = await updateUser({
                     uuid: user.uuid,
@@ -58,7 +63,7 @@ usersController.put(
 usersController.get(
     '/:uuid',
     passport.authenticate('jwt', { session: false }),
-    verifyAdmin,
+    authMiddleware.isAdmin,
     async (req, res) => {
         const { uuid } = req.params;
         const user = await getUser({ uuid });
@@ -70,7 +75,7 @@ usersController.get(
 usersController.delete(
     '/:uuid',
     passport.authenticate('jwt', { session: false }),
-    verifyAdmin,
+    authMiddleware.isAdmin,
     async (req, res) => {
         const { uuid } = req.params;
         const response = await deleteUser({ uuid });
